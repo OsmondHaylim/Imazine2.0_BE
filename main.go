@@ -1,21 +1,22 @@
 package main
 
 import (
+	"context"
+
+	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
-	"github.com/gofiber/fiber/v2"
-
 	// "encoding/json"
 	// "fmt"
-	// "io/ioutil"
-	// "net/http"
+	"io/ioutil"
+	"net/http"
 )
+
+// testing with yt tutor vid
 
 type Repository struct{
 	DB *gorm.DB
 }
-
-// testing with yt tutor vid
 
 type Article struct{
 	ID 			string		`json:"id"`
@@ -26,6 +27,49 @@ type Article struct{
 	DateCreated	string		`json:"created"`
 	ViewCount	int			`json:"view_count"`
 }
+
+func (r *Repository) CreateArticle(context *fiber.App) error{
+	article := Article{}
+
+	err := context.BodyParser(&article)
+
+	if err != nil {
+		context.Status(http.StatusUnprocessableEntity).JSON(
+			&fiber.Map{"message":"Request failed"})
+		return err
+	}
+
+	err := r.DB.Create(&article).Error
+	if err != nil {
+		context.Status(http.StatusBadRequest).JSON(
+			&fiber.Map{"message":"Could not create article"})
+		return err
+	}
+
+	context.Status(http.StatusOK).JSON(
+		&fiber.Map{"message":"Article has been added"})
+	return nil
+
+}
+
+func (r *Repository) GetArticle(context *fiber.App) error{
+	artM := &[]models.Article{}
+
+	err := r.DB.Find(artM).Error
+	if err != nil {
+		context.Status(http.StatusBadRequest).JSON(
+			&fiber.Map{"message":"Could not get articles"})
+		return err
+	}
+
+	context.Status(http.StatusOK).JSON(&fiber.Map{
+		"message":	"Articles fetched successfully", 
+		"data":		artM,
+	})
+	return err
+}
+
+
 
 func(r *Repository) SetupRoutes(app *fiber.App){
 	api := app.Group("/api")
