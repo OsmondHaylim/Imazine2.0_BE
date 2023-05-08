@@ -1,11 +1,15 @@
 package main
 
 import (
-	"context"
+	"fmt"
+	"imazine/models"
+	"imazine/storage"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
+
 	// "encoding/json"
 	// "fmt"
 	"io/ioutil"
@@ -27,7 +31,7 @@ type Article struct{
 	ViewCount	int			`json:"view_count"`
 }
 
-func (r *Repository) CreateArticle(context *fiber.App) error{
+func (r *Repository) CreateArticle(context *fiber.Ctx) error{
 	article := Article{}
 
 	err := context.BodyParser(&article)
@@ -48,10 +52,9 @@ func (r *Repository) CreateArticle(context *fiber.App) error{
 	context.Status(http.StatusOK).JSON(
 		&fiber.Map{"message":"Article has been added"})
 	return nil
-
 }
 
-func (r *Repository) GetArticle(context *fiber.App) error{
+func (r *Repository) GetArticle(context *fiber.Ctx) error{
 	artM := &[]models.Article{}
 
 	err := r.DB.Find(artM).Error
@@ -68,9 +71,31 @@ func (r *Repository) GetArticle(context *fiber.App) error{
 	return err
 }
 
+func (r *Repository) DeleteArticle(context *fiber.Ctx) error{
+	artM := models.Article{}
+	id := context.Params("id")
+	if id == ""{
+		context.Status(http.StatusInternalServerError).JSON(&fiber.Map{
+			"message":"ID cannot be empty",
+		})
+		return nil
+	}
 
+	err := r.DB.Delete(artM, id)
 
-func(r *Repository) SetupRoutes(app *fiber.App){
+	if err.Error != nil{
+		context.Status(http.StatusBadRequest).JSON(&fiber.Map{
+			"message":"Could not delete article",
+		})
+		return err.Error
+	}
+	context.Status(http.StatusOK).JSON(&fiber.Map{
+		"message":"Article deleted",
+	})
+	return nil
+}
+
+func(r *Repository) SetupRoutes(app *fiber.Ctx){
 	api := app.Group("/api")
 	api.Post("/create_articles", r.CreateArticle)
 	api.Delete("/delete_articles", r.DeleteArticle)
@@ -78,22 +103,57 @@ func(r *Repository) SetupRoutes(app *fiber.App){
 	api.Get("/get_articles", r.GetArticle)
 }
 
+func (r *Repository) GetArticleByID(context *fiber.Ctx) error{
+	id := context.Params("id")
+	artM := &models.Article{}
+	if id == ""{
+		context.Status(http.StatusInternalServerError).JSON(&fiber.Map{
+			"message":"ID cannot be empty",
+		})
+		return nil
+	}
+
+	fmt.Println("ID = ", id)
+	err := r.DB.Where("id = ?", id).First(artM).Error
+	if err != nil{
+		context.Status(http.StatusBadRequest).JSON(&fiber.Map{
+			"message":"Couldn't get article",
+		})
+		return err
+	}
+	context.Status(http.StatusOK).JSON(&fiber.Map{
+		"message":"Article ID fetched",
+		"data":artM,
+	})
+	return nil
+}
+
 func main(){
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	config := &storage.Config{
+		Host:		os.Getenv("DB_HOST"),
+		Port:		os.Getenv("DB_PORT"),
+		Password:	os.Getenv("DB_PASS"),
+		User:		os.Getenv("DB_USER"),
+		SSLMode:	os.Getenv("DB_SSLMODE"),
+		DBName:		os.Getenv("DB_NAME"),
+	}
 	db, err := storage.NewConnection(config)
 	if err != nil {
 		log.Fatal("Could not load the database")
 	}
 
+	err = models.MigrateArticles(db)
+	if err != nil {
+		log.Fatal("Could not migrate the database")
+	}
 
 	r := Repository{
 		DB: db,
 	}
-
 	app := fiber.New()
 	r.SetupRoutes(app)
 	app.Listen(":8080")
