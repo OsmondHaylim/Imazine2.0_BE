@@ -19,9 +19,8 @@ type Repository struct{
 }
 
 type Article struct{
-	ID 			string		`json:"id"`
-	AuthorID 	string		`json:"author"`
-	CategoryID 	string		`json:"category"`
+	Author 		string		`json:"author"`
+	Category 	string		`json:"category"`
 	Title		string		`json:"title"`
 	Content		string		`json:"content"`
 	DateCreated	string		`json:"created"`
