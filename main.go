@@ -12,8 +12,9 @@ import (
 
 	// "encoding/json"
 	// "fmt"
-	"io/ioutil"
+	// "io/ioutil"
 	"net/http"
+	"log"
 )
 
 // testing with yt tutor vid
@@ -42,7 +43,7 @@ func (r *Repository) CreateArticle(context *fiber.Ctx) error{
 		return err
 	}
 
-	err := r.DB.Create(&article).Error
+	err = r.DB.Create(&article).Error
 	if err != nil {
 		context.Status(http.StatusBadRequest).JSON(
 			&fiber.Map{"message":"Could not create article"})
@@ -53,7 +54,6 @@ func (r *Repository) CreateArticle(context *fiber.Ctx) error{
 		&fiber.Map{"message":"Article has been added"})
 	return nil
 }
-
 func (r *Repository) GetArticle(context *fiber.Ctx) error{
 	artM := &[]models.Article{}
 
@@ -70,7 +70,6 @@ func (r *Repository) GetArticle(context *fiber.Ctx) error{
 	})
 	return err
 }
-
 func (r *Repository) DeleteArticle(context *fiber.Ctx) error{
 	artM := models.Article{}
 	id := context.Params("id")
@@ -94,15 +93,6 @@ func (r *Repository) DeleteArticle(context *fiber.Ctx) error{
 	})
 	return nil
 }
-
-func(r *Repository) SetupRoutes(app *fiber.Ctx){
-	api := app.Group("/api")
-	api.Post("/create_articles", r.CreateArticle)
-	api.Delete("/delete_articles", r.DeleteArticle)
-	api.Get("/get_articles/:id", r.GetArticleByID)
-	api.Get("/get_articles", r.GetArticle)
-}
-
 func (r *Repository) GetArticleByID(context *fiber.Ctx) error{
 	id := context.Params("id")
 	artM := &models.Article{}
@@ -127,6 +117,16 @@ func (r *Repository) GetArticleByID(context *fiber.Ctx) error{
 	})
 	return nil
 }
+
+func(r *Repository) SetupRoutes(app *fiber.App){
+	api := app.Group("/api")
+	api.Post("/create_articles", r.CreateArticle)
+	api.Delete("/delete_articles", r.DeleteArticle)
+	api.Get("/get_articles/:id", r.GetArticleByID)
+	api.Get("/get_articles", r.GetArticle)
+}
+
+
 
 func main(){
 	err := godotenv.Load(".env")
