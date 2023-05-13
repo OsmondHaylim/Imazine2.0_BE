@@ -8,5 +8,6 @@ type User struct {
 	Email                string            `gorm:"notNull" json:"email"`
 	Password             string            `gorm:"notNull" json:"password"`
 	IsAdmin              bool              `gorm:"notNull;default:false" json:"is_admin"`
+	Token                string            `json:"token"`
 	HasArticleEditAccess []ArticleCategory `gorm:"many2many:has_article_edit_access;" json:"has_article_edit_access"`
 }
