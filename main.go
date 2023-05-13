@@ -5,6 +5,7 @@ import (
 	"imazine/models"
 	"imazine/storage"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -28,7 +29,7 @@ type Article struct{
 	Category 	string		`json:"category"`
 	Title		string		`json:"title"`
 	Content		string		`json:"content"`
-	DateCreated	string		`json:"created"`
+	DateCreated	time.Time	`json:"created"`
 	ViewCount	int			`json:"view_count"`
 }
 
@@ -36,7 +37,6 @@ func (r *Repository) CreateArticle(context *fiber.Ctx) error{
 	article := Article{}
 
 	err := context.BodyParser(&article)
-
 	if err != nil {
 		context.Status(http.StatusUnprocessableEntity).JSON(
 			&fiber.Map{"message":"Request failed"})
@@ -124,8 +124,63 @@ func(r *Repository) SetupRoutes(app *fiber.App){
 	api.Delete("/delete_articles", r.DeleteArticle)
 	api.Get("/get_articles/:id", r.GetArticleByID)
 	api.Get("/get_articles", r.GetArticle)
+	api.Post("/login", r.Login)
 }
 
+func(r *Repository) Login(context *fiber.Ctx) error{
+	type FormBody struct {
+		NPM      string `form:"npm"`
+		Password string `form:"password"`
+	}
+	a := new(FormBody)
+
+	err := c.BodyParser(a)
+	if err != nil {
+		panic(err)
+	}
+
+	type ExportedUser struct {
+		ID                   string `json:"id"`
+		Name                 string `json:"name"`
+		NPM                  string `json:"npm"`
+		ProfilePictureLink   string `json:"profile_picture_link"`
+		Email                string `json:"email"`
+		IsAdmin              bool   `json:"is_admin"`
+		HasArticleEditAccess []struct {
+			ID   int    `json:"id"`
+			Name string `json:"name"`
+		} `json:"has_article_edit_access"`
+	}
+
+	jsonStr := `{
+		"id": "aaaaaa",
+		"name": "Fauzan Azmi Dwicahyo",
+		"npm": "140810200030",
+		"profile_picture_link": "https://a.ppy.sh/2449200?1624766977.jpeg",
+		"email": "fauzan.azmi01@gmail.com",
+		"is_admin": true,
+		"has_article_edit_access": [
+			{
+				"id": 1,
+				"name": "Big Category"
+			}
+		]
+	}`
+
+	var user ExportedUser
+	err = json.Unmarshal([]byte(jsonStr), &user)
+
+	if a.NPM == "npm" && a.Password == "password" {
+		return c.Status(200).JSON(&fiber.Map{
+			"message": "Login Success!",
+			"user":    user,
+		})
+	}
+
+	return c.Status(400).JSON(&fiber.Map{
+		"message": "Login Failed!",
+	})
+}
 
 
 func main(){
