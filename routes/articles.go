@@ -26,7 +26,7 @@ func CreateArticle(context *fiber.Ctx) error{
 
 	return context.Status(200).JSON(&fiber.Map{
 		"message": "Article created",
-		"article": result,
+		"article": models.ToArticleSmall(result),
 	})
 }
 
