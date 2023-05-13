@@ -12,6 +12,24 @@ type Article struct{
 	ViewCount	*int		`json:"view_count"`
 }
 
+type FormBody struct {
+	NPM      string `form:"npm"`
+	Password string `form:"password"`
+}
+
+type User struct {
+	ID                   string `json:"id"`
+	Name                 string `json:"name"`
+	NPM                  string `json:"npm"`
+	ProfilePictureLink   string `json:"profile_picture_link"`
+	Email                string `json:"email"`
+	IsAdmin              bool   `json:"is_admin"`
+	HasArticleEditAccess []struct {
+		ID   int    `json:"id"`
+		Name string `json:"name"`
+	} `json:"has_article_edit_access"`
+}
+
 func MigrateArticles(db *gorm.DB) error{
 	err := db.AutoMigrate(&Article{})
 	return err
