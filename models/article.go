@@ -1,36 +1,16 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+)
 
-type Article struct{
-	ID 			int			`gorm:"primary key;autoIncrement" json:"`
-	Author 		*string		`json:"author"`
-	Category 	*string		`json:"category"`
-	Title		*string		`json:"title"`
-	Content		*string		`json:"content"`
-	DateCreated	*string		`json:"created"`
-	ViewCount	*int		`json:"view_count"`
-}
-
-type FormBody struct {
-	NPM      string `form:"npm"`
-	Password string `form:"password"`
-}
-
-type User struct {
-	ID                   string `json:"id"`
-	Name                 string `json:"name"`
-	NPM                  string `json:"npm"`
-	ProfilePictureLink   string `json:"profile_picture_link"`
-	Email                string `json:"email"`
-	IsAdmin              bool   `json:"is_admin"`
-	HasArticleEditAccess []struct {
-		ID   int    `json:"id"`
-		Name string `json:"name"`
-	} `json:"has_article_edit_access"`
-}
-
-func MigrateArticles(db *gorm.DB) error{
-	err := db.AutoMigrate(&Article{})
-	return err
+type Article struct {
+	ID              int             `gorm:"primaryKey;autoIncrement" json:"id"`
+	Author          string          `gorm:"notNull" json:"author"`
+	CategoryID      int             `gorm:"notNull" json:"category_id"`
+	Category        ArticleCategory `json:"category"`
+	Title           string          `gorm:"notNull" json:"title"`
+	MarkdownContent string          `gorm:"notNull" json:"markdown_content "`
+	CreatedAt       time.Time       `gorm:"notNull" json:"created_at"`
+	ViewCount       int             `gorm:"notNull;default:0" json:"view_count"`
 }
