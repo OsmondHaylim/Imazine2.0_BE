@@ -20,11 +20,33 @@ type UserSmall struct {
 	ProfilePictureLink string `json:"profile_picture_link"`
 }
 
+type UserLogin struct {
+	ID                   int               `json:"id"`
+	Name                 string            `json:"name"`
+	NPM                  string            `json:"npm"`
+	ProfilePictureLink   string            `json:"profile_picture_link"`
+	Email                string            `json:"email"`
+	IsAdmin              bool              `json:"is_admin"`
+	HasArticleEditAccess []ArticleCategory `json:"has_article_edit_access"`
+}
+
 func ToUserSmall(user User) UserSmall {
 	return UserSmall{
 		ID:                 user.ID,
 		Name:               user.Name,
 		NPM:                user.NPM,
 		ProfilePictureLink: user.ProfilePictureLink,
+	}
+}
+
+func ToUserLogin(user User) UserLogin {
+	return UserLogin{
+		ID:                   user.ID,
+		Name:                 user.Name,
+		NPM:                  user.NPM,
+		ProfilePictureLink:   user.ProfilePictureLink,
+		Email:                user.Email,
+		IsAdmin:              user.IsAdmin,
+		HasArticleEditAccess: user.HasArticleEditAccess,
 	}
 }
