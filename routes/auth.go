@@ -2,8 +2,11 @@ package routes
 
 import (
 	"encoding/json"
+	"imazine/models"
+	"imazine/storage"
 
 	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Login(c *fiber.Ctx) error{
@@ -60,4 +63,33 @@ func Login(c *fiber.Ctx) error{
 	return c.Status(400).JSON(&fiber.Map{
 		"message": "Login Failed!",
 	})
+}
+
+// probably not gonna be exposed to frontend
+func Register(context *fiber.Ctx) error {
+	userModel := new(models.User)
+
+	if err := context.BodyParser(userModel); err != nil {
+		return context.Status(400).JSON(&fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	if err := DoRegister(userModel); err != nil {
+		return context.Status(400).JSON(&fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	
+	return context.Status(200).JSON(userModel)
+}
+
+func DoRegister(userModel *models.User)  error {
+	newPassword, err := bcrypt.GenerateFromPassword([]byte(userModel.Password), 10)
+
+	userModel.Password = string(newPassword)
+
+	storage.DB.Db.Create(&userModel)
+
+	return err
 }
