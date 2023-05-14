@@ -1,13 +1,23 @@
 package routes
 
 import (
-	"encoding/json"
+	"crypto/rand"
+	"encoding/hex"
 	"imazine/models"
 	"imazine/storage"
 
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm/clause"
 )
+
+func GenerateSecureToken(length int) string {
+    b := make([]byte, length)
+    if _, err := rand.Read(b); err != nil {
+        return ""
+    }
+    return hex.EncodeToString(b)
+}
 
 func Login(c *fiber.Ctx) error{
 	type FormBody struct {
@@ -15,53 +25,32 @@ func Login(c *fiber.Ctx) error{
 		Password string `form:"password"`
 	}
 	a := new(FormBody)
-
-	err := c.BodyParser(a)
-	if err != nil {
-		panic(err)
-	}
-
-	type ExportedUser struct {
-		ID                   string `json:"id"`
-		Name                 string `json:"name"`
-		NPM                  string `json:"npm"`
-		ProfilePictureLink   string `json:"profile_picture_link"`
-		Email                string `json:"email"`
-		IsAdmin              bool   `json:"is_admin"`
-		HasArticleEditAccess []struct {
-			ID   int    `json:"id"`
-			Name string `json:"name"`
-		} `json:"has_article_edit_access"`
-	}
-
-	jsonStr := `{
-		"id": "aaaaaa",
-		"name": "Fauzan Azmi Dwicahyo",
-		"npm": "140810200030",
-		"profile_picture_link": "https://a.ppy.sh/2449200?1624766977.jpeg",
-		"email": "fauzan.azmi01@gmail.com",
-		"is_admin": true,
-		"has_article_edit_access": [
-			{
-				"id": 1,
-				"name": "Big Category"
-			}
-		]
-	}`
-
-	var user ExportedUser
-	err = json.Unmarshal([]byte(jsonStr), &user)
-
-	if a.NPM == "npm" && a.Password == "password" {
-		return c.Status(200).JSON(&fiber.Map{
-			"message": "Login Success!",
-			"apiKey": "1234567890",
-			"user":    user,
+	if err := c.BodyParser(a); err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"message": err.Error(),
 		})
 	}
 
-	return c.Status(400).JSON(&fiber.Map{
-		"message": "Login Failed!",
+	var user models.User
+	if err := storage.DB.Db.Where("npm = ?", a.NPM).Preload(clause.Associations).First(&user).Error; err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"message": "NPM atau Password salah!",
+		})
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(a.Password)); err != nil {
+		return c.Status(400).JSON(&fiber.Map{
+			"message": "NPM atau Password salah!",
+		})
+	}
+
+	token := GenerateSecureToken(10)
+	storage.DB.Db.Model(&user).Update("Token", token)
+
+	return c.Status(200).JSON(&fiber.Map{
+		"message": "Login Success!",
+		"apiKey": token,
+		"user":    models.ToUserLogin(user),
 	})
 }
 
