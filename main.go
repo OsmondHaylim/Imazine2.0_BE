@@ -1,6 +1,7 @@
 package main
 
 import (
+	"imazine/middlewares"
 	"imazine/routes"
 	"imazine/storage"
 	"os"
@@ -18,6 +19,13 @@ import (
 func setUpRoutes(app *fiber.App) {
 	app.Use(cors.New())
 
+	// route di atas app.Use(AuthenticateUser) nggak kena cek auth
+	app.Post("/login", routes.Login)
+	app.Post("/register", routes.Register)
+
+	app.Use(middlewares.AuthenticateUser)
+	// Untuk mengakses user yang melakukan request, bisa menggunakan context.Locals("user")
+
 	app.Post("/categories", routes.CreateArticleCategory)
 	app.Get("/categories", routes.GetArticleCategories)
 	app.Get("/categories/:id", routes.GetArticleCategoryByID)
@@ -28,9 +36,6 @@ func setUpRoutes(app *fiber.App) {
 	app.Get("/articles/:id", routes.GetArticleByID)
 	app.Post("/articles", routes.CreateArticle)
 	app.Delete("/articles", routes.DeleteArticle)
-
-	app.Post("/login", routes.Login)
-	app.Post("/register", routes.Register)
 }
 
 func main(){
