@@ -19,6 +19,10 @@ func setUpRoutes(app *fiber.App) {
 	app.Use(cors.New())
 
 	app.Post("/categories", routes.CreateArticleCategory)
+	app.Get("/categories", routes.GetArticleCategories)
+	app.Get("/categories/:id", routes.GetArticleCategoryByID)
+	app.Put("/categories/:id", routes.EditCategory)
+	app.Delete("/categories/:id", routes.DeleteCategory)
 
 	app.Get("/articles", routes.GetArticle)
 	app.Get("/articles/:id", routes.GetArticleByID)
