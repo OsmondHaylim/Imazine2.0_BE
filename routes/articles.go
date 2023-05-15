@@ -136,14 +136,17 @@ func CreateArticle(context *fiber.Ctx) error{
 
 func GetArticle(context *fiber.Ctx) error{
 	articles := &[]models.Article{}
+	query := storage.DB.Db.Preload(clause.Associations).Order("created_at desc")
+
+	if categoryId := context.Query("category"); categoryId != "" {
+		query = query.Where("category_id = ?", categoryId)
+	}
 
 	// TODO implement limit and offset
 	// TODO only fetch needed data (articleListCard)
-	err := storage.DB.Db.Preload(clause.Associations).Order("created_at desc").Find(articles).Error
+	err := query.Find(articles).Error
 	if err != nil {
-		context.Status(http.StatusBadRequest).JSON(
-			&fiber.Map{"message":"Could not get articles"})
-		return err
+		return context.Status(http.StatusBadRequest).JSON(err)
 	}
 
 	return context.Status(http.StatusOK).JSON(articles)
