@@ -14,7 +14,7 @@ func AuthenticateUser(context *fiber.Ctx) error {
 
 	// Bentuk Header yang diinginkan:
 	// Authorization: Bearer [token 20 digit]
-	if len(res) != 2 && res[0] != "Bearer" && len(res[1]) != 20 {
+	if len(res) != 2 || res[0] != "Bearer" || len(res[1]) != 20 {
 		return context.Status(400).JSON(&fiber.Map{
 			"message": "Unauthorized",
 		})
