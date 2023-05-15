@@ -1,77 +1,19 @@
 package routes
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"imazine/models"
 	"imazine/storage"
+	"imazine/utils"
 	"io"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm/clause"
 )
-
-// TODO clean up the whole upload thing, maybe move this to another file and move stuffs on CreateArticle to separate functions
-func Upload(url string, values map[string]io.Reader) (res *http.Response, err error) {
-	var client *http.Client = &http.Client{}
-	
-    // Prepare a form that you will submit to that URL.
-    var b bytes.Buffer
-    w := multipart.NewWriter(&b)
-    for key, r := range values {
-        var fw io.Writer
-        if x, ok := r.(io.Closer); ok {
-            defer x.Close()
-        }
-        // Add an image file
-        if x, ok := r.(*os.File); ok {
-            if fw, err = w.CreateFormFile(key, x.Name()); err != nil {
-                return
-            }
-        } else {
-            // Add other fields
-            if fw, err = w.CreateFormField(key); err != nil {
-                return
-            }
-        }
-        if _, err = io.Copy(fw, r); err != nil {
-            return
-        }
-
-    }
-    // Don't forget to close the multipart writer.
-    // If you don't close it, your request will be missing the terminating boundary.
-    w.Close()
-
-    // Now that you have a form, you can submit it to your handler.
-    req, err := http.NewRequest("POST", url, &b)
-    if err != nil {
-        return nil, err
-    }
-
-    // Don't forget to set the content type, this will contain the boundary.
-    req.Header.Set("Content-Type", w.FormDataContentType())
-    req.Header.Set("Content-Length", fmt.Sprint(len(b.Bytes())))
-	req.Header.Set("Host", "localhost:8080")
-
-    // Submit the request
-    res, err = client.Do(req)
-	return res, err
-}
-
-func mustOpen(f string) *os.File {
-    r, err := os.Open(f)
-    if err != nil {
-        panic(err)
-    }
-    return r
-}
-
 
 func CreateArticle(context *fiber.Ctx) error{
 	article := new(models.Article)
@@ -88,10 +30,10 @@ func CreateArticle(context *fiber.Ctx) error{
 	context.SaveFile(file, fmt.Sprintf("./download_cache/%s", file.Filename))
 
 	values := map[string]io.Reader{
-        "image": mustOpen(fmt.Sprintf("download_cache/%s", file.Filename)), // lets assume its this file
+        "image": utils.MustOpen(fmt.Sprintf("download_cache/%s", file.Filename)), // lets assume its this file
     }
     
-	res, err := Upload("https://api.imgbb.com/1/upload?key=7b39ff8818a667ee516b470fd8bcbd09", values)
+	res, err := utils.Upload("https://api.imgbb.com/1/upload?key=7b39ff8818a667ee516b470fd8bcbd09", values)
 	bodyBytes, err := ioutil.ReadAll(res.Body)
     if err != nil {
 		return context.Status(400).JSON(err.Error())
