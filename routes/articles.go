@@ -176,24 +176,11 @@ func DeleteArticle(context *fiber.Ctx) error{
 func GetArticleByID(context *fiber.Ctx) error{
 	id := context.Params("id")
 	artM := &models.Article{}
-	if id == ""{
-		context.Status(http.StatusInternalServerError).JSON(&fiber.Map{
-			"message":"ID cannot be empty",
-		})
-		return nil
-	}
 
-	fmt.Println("ID = ", id)
 	err := storage.DB.Db.Preload(clause.Associations).First(artM, id).Error
-	if err != nil{
-		context.Status(http.StatusBadRequest).JSON(&fiber.Map{
-			"message":"Couldn't get article",
-		})
-		return err
+	if err != nil {
+		return context.Status(http.StatusBadRequest).JSON(err)
 	}
-	context.Status(http.StatusOK).JSON(&fiber.Map{
-		"message":"Article ID fetched",
-		"data":artM,
-	})
+	context.Status(http.StatusOK).JSON(models.ToArticleSmall(*artM))
 	return nil
 }
