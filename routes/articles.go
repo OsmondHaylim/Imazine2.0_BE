@@ -135,20 +135,18 @@ func CreateArticle(context *fiber.Ctx) error{
 }
 
 func GetArticle(context *fiber.Ctx) error{
-	artM := &[]models.Article{}
+	articles := &[]models.Article{}
 
-	err := storage.DB.Db.Find(artM).Error
+	// TODO implement limit and offset
+	// TODO only fetch needed data (articleListCard)
+	err := storage.DB.Db.Preload(clause.Associations).Order("created_at desc").Find(articles).Error
 	if err != nil {
 		context.Status(http.StatusBadRequest).JSON(
 			&fiber.Map{"message":"Could not get articles"})
 		return err
 	}
 
-	context.Status(http.StatusOK).JSON(&fiber.Map{
-		"message":	"Articles fetched successfully", 
-		"data":		artM,
-	})
-	return err
+	return context.Status(http.StatusOK).JSON(articles)
 }
 
 func DeleteArticle(context *fiber.Ctx) error{
