@@ -70,10 +70,7 @@ func CreateArticle(context *fiber.Ctx) error{
 	var result models.Article
 	storage.DB.Db.Preload(clause.Associations).First(&result, article.ID)
 
-	return context.Status(200).JSON(&fiber.Map{
-		"message": "Article created",
-		"article": models.ToArticleSmall(result),
-	})
+	return context.Status(200).JSON(models.ToArticleSmall(result))
 }
 
 func GetArticle(context *fiber.Ctx) error{
