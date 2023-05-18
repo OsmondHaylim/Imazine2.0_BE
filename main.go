@@ -39,6 +39,10 @@ func setUpRoutes(app *fiber.App) {
 	app.Delete("/articles/:id", routes.DeleteArticle)
 
 	app.Get("/creators/articles/:id", routes.GetArticleByCategory)
+
+	app.Get("/users", routes.SearchUser)
+	app.Get("admin/categories/edit-access", routes.GetUsersWithCategoryEditAccess)
+	app.Post("admin/categories/edit-access", routes.AddCategoryUserPair)
 }
 
 func main(){
