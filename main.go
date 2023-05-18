@@ -35,6 +35,7 @@ func setUpRoutes(app *fiber.App) {
 	app.Get("/articles", routes.GetArticle)
 	app.Get("/articles/:id", routes.GetArticleByID)
 	app.Post("/articles", routes.CreateArticle)
+	app.Put("/articles/:id", routes.UpdateArticle)
 	app.Delete("/articles/:id", routes.DeleteArticle)
 
 	app.Get("/creators/articles/:id", routes.GetArticleByCategory)
