@@ -37,3 +37,22 @@ func AddCategoryUserPair(context *fiber.Ctx) error {
 	storage.DB.Db.Table("has_article_edit_access").Create(body)
 	return context.Status(200).JSON(body)
 }
+
+func RemoveCategoryUserPair(context *fiber.Ctx) error {
+	type Body struct {
+		ArticleCategoryId int `form:"category_id"`
+		UserId int `form:"user_id"`
+	}
+
+	body := new(Body)
+	if err := context.BodyParser(body); err != nil {
+		return context.Status(400).JSON(err.Error())
+	}
+
+	storage.DB.Db.
+		Table("has_article_edit_access").
+		Where("user_id = ?", body.UserId).
+		Where("article_category_id = ?", body.ArticleCategoryId).
+		Delete(body)
+	return context.Status(200).JSON(body)
+}
