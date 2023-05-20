@@ -56,3 +56,23 @@ func RemoveCategoryUserPair(context *fiber.Ctx) error {
 		Delete(body)
 	return context.Status(200).JSON(body)
 }
+
+func AddUser(context *fiber.Ctx) error {
+	userModel := new(models.User)
+
+	if err := context.BodyParser(userModel); err != nil {
+		return context.Status(400).JSON(&fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	userModel.Password = "defaultPassword"
+
+	if err := DoRegister(userModel); err != nil {
+		return context.Status(400).JSON(&fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	
+	return context.SendStatus(200)
+}
