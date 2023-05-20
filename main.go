@@ -45,27 +45,31 @@ func setUpRoutes(app *fiber.App) {
 	app.Post("admin/categories/edit-access", routes.AddCategoryUserPair)
 	app.Delete("admin/categories/edit-access", routes.RemoveCategoryUserPair)
 
+	app.Put("/profile", routes.UpdateProfile)
+	app.Post("/profile/password", routes.ChangePassword)
+	app.Post("/profile/profile-picture", routes.UploadProfilePicture)
+
 	app.Post("admin/users", routes.AddUser)
 	app.Put("admin/users/:id", routes.EditUser)
 }
 
-func main(){
+func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal(err)
 	}
 	config := &storage.Config{
-		Host:		os.Getenv("DB_HOST"),
-		Port:		os.Getenv("DB_PORT"),
-		Password:	os.Getenv("DB_PASS"),
-		User:		os.Getenv("DB_USER"),
-		SSLMode:	os.Getenv("DB_SSLMODE"),
-		DBName:		os.Getenv("DB_NAME"),
+		Host:     os.Getenv("DB_HOST"),
+		Port:     os.Getenv("DB_PORT"),
+		Password: os.Getenv("DB_PASS"),
+		User:     os.Getenv("DB_USER"),
+		SSLMode:  os.Getenv("DB_SSLMODE"),
+		DBName:   os.Getenv("DB_NAME"),
 	}
 
 	storage.ConnectDB(config)
 	app := fiber.New()
-	
+
 	setUpRoutes(app)
 
 	app.Listen(":8080")
@@ -109,11 +113,8 @@ func main(){
 // 	}
 // }
 
-
-
 // func GetMux() *http.ServeMux {
 // 	mux := http.NewServeMux()
 // 	mux.HandleFunc("/", homepage())
 // 	return mux
 // }
-
