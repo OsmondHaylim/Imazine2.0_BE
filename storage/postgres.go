@@ -40,7 +40,7 @@ func ConnectDB(config *Config) {
 		panic("Failed to connect to database. \n" + err.Error())
 	}
 
-	MigrateModels(db)
+	// MigrateModels(db)
 
 	DB = Dbinstance{
 		Db: db,
