@@ -76,3 +76,16 @@ func AddUser(context *fiber.Ctx) error {
 	
 	return context.SendStatus(200)
 }
+
+func EditUser(context *fiber.Ctx) error {
+	user := new(models.User)
+
+	storage.DB.Db.First(user, context.Params("id"))
+
+	if err := context.BodyParser(user); err != nil {
+		return context.Status(400).JSON(err.Error())
+	}
+
+	storage.DB.Db.Save(&user)
+	return context.SendStatus(200)
+}
