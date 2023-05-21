@@ -1,8 +1,12 @@
 package routes
 
 import (
+	"encoding/csv"
+	"fmt"
 	"imazine/models"
 	"imazine/storage"
+	"imazine/utils"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm/clause"
@@ -75,6 +79,32 @@ func AddUser(context *fiber.Ctx) error {
 	}
 	
 	return context.SendStatus(200)
+}
+
+func AddUsersCsv(context *fiber.Ctx) error {
+	file, err := context.FormFile("file")
+	if err != nil {
+		return context.Status(400).JSON(err.Error())
+	}
+
+	context.SaveFile(file, fmt.Sprintf("./download_cache/%s", file.Filename))
+	csv_f := utils.MustOpen(fmt.Sprintf("download_cache/%s", file.Filename))
+
+	csvReader := csv.NewReader(csv_f)
+    data, err := csvReader.ReadAll()
+    if err != nil {
+		return context.Status(400).JSON(err.Error())
+    }
+
+	newUsers := models.CreateUserList(data)
+	if err := storage.DB.Db.Create(&newUsers).Error; err != nil {
+		return context.Status(400).JSON(err.Error())
+	}
+	err = os.Remove(fmt.Sprintf("download_cache/%s", file.Filename))
+
+	return context.Status(200).JSON(&fiber.Map{
+		"message": "success",
+	})
 }
 
 func EditUser(context *fiber.Ctx) error {

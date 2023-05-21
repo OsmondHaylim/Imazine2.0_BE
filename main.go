@@ -50,6 +50,7 @@ func setUpRoutes(app *fiber.App) {
 	app.Post("/profile/profile-picture", routes.UploadProfilePicture)
 
 	app.Post("admin/users", routes.AddUser)
+	app.Post("admin/users/add-csv", routes.AddUsersCsv)
 	app.Put("admin/users/:id", routes.EditUser)
 }
 

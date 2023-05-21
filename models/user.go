@@ -50,3 +50,23 @@ func ToUserLogin(user User) UserLogin {
 		HasArticleEditAccess: user.HasArticleEditAccess,
 	}
 }
+
+func CreateUserList(data [][]string) []User {
+	var users []User
+	for i, line := range data {
+		if i > 0 { // omit header line
+			var rec User
+			for j, field := range line {
+				if j == 0 {
+					rec.NPM = field
+				} else if j == 1 {
+					rec.Name = field
+				} else if j == 2 {
+					rec.Email = field
+				}
+			}
+			users = append(users, rec)
+		}
+	}
+	return users
+}
