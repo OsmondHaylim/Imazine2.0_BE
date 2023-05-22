@@ -27,6 +27,7 @@ func MigrateModels(db *gorm.DB) {
 	db.AutoMigrate(models.ArticleCategory{})
 	db.AutoMigrate(models.User{})
 	db.AutoMigrate(models.Article{})
+	db.AutoMigrate(models.Request{})
 }
 
 func ConnectDB(config *Config) {
