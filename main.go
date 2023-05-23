@@ -40,6 +40,7 @@ func setUpRoutes(app *fiber.App) {
 
 	app.Get("/creators/articles/:id", routes.GetArticleByCategory)
 
+	app.Get("/me", routes.Me)
 	app.Get("/users", routes.SearchUser)
 	app.Get("admin/categories/edit-access", routes.GetUsersWithCategoryEditAccess)
 	app.Post("admin/categories/edit-access", routes.AddCategoryUserPair)

@@ -56,6 +56,13 @@ func UploadProfilePicture(context *fiber.Ctx) error {
 	return context.SendStatus(200)
 }
 
+func Me(context *fiber.Ctx) error {
+	userLocals := context.Locals("user")
+	user, _ := userLocals.(models.User)
+
+	return context.Status(200).JSON(models.ToUserLogin(user))
+}
+
 func ChangePassword(context *fiber.Ctx) error {
 	type FormBody struct {
 		OldPassword       string `form:"oldPassword"`
