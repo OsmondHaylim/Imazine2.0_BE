@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  web:
+    container_name: Imazine2.0_BE
+    build: ./
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    command: /server
