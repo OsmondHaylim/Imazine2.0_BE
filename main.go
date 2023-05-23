@@ -4,16 +4,15 @@ import (
 	"imazine/middlewares"
 	"imazine/routes"
 	"imazine/storage"
+	"log"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
-
 	// "encoding/json"
 	// "fmt"
 	// "io/ioutil"
-	"log"
 )
 
 func setUpRoutes(app *fiber.App) {
@@ -58,7 +57,7 @@ func setUpRoutes(app *fiber.App) {
 func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatal(err)
+		log.Print("Missing .env file. Probably okay on dockerized environment")
 	}
 	config := &storage.Config{
 		Host:     os.Getenv("DB_HOST"),
