@@ -27,6 +27,9 @@ func UploadProfilePicture(context *fiber.Ctx) error {
 	}
 
 	res, err := utils.Upload("https://api.imgbb.com/1/upload?key=7b39ff8818a667ee516b470fd8bcbd09", values)
+	if err != nil {
+		return context.Status(400).JSON(err.Error())
+	}
 
 	bodyBytes, err := ioutil.ReadAll(res.Body)
 	if err != nil {
