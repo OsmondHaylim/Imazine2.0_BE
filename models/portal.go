@@ -9,6 +9,7 @@ type Request struct{
 	ContentHeader 	string          `gorm:"notNull" json:"content_header" form:"content_header"`
 	Content 		string          `gorm:"notNull" json:"content" form:"content"`
 	Status 			string			`gorm:"notNull" json:"status"`
+	Evidence		string			`json:"evidence"`
 	CreatedAt   	time.Time       `gorm:"notNull" json:"created_at"`
 	Deadline		time.Time		`gorm:"notNull" json:"deadline"`
 }
