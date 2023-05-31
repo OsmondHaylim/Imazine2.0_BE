@@ -66,6 +66,8 @@ func CreateUserList(data [][]string) []User {
 					rec.Email = field
 				}
 			}
+
+			rec.Password = "defaultPassword"
 			users = append(users, rec)
 		}
 	}

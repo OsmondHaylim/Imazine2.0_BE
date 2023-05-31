@@ -97,8 +97,12 @@ func AddUsersCsv(context *fiber.Ctx) error {
     }
 
 	newUsers := models.CreateUserList(data)
-	if err := storage.DB.Db.Create(&newUsers).Error; err != nil {
-		return context.Status(400).JSON(err.Error())
+
+	for _, user := range newUsers {
+		if err := DoRegister(&user); err != nil { // TODO use transaction
+			err = os.Remove(fmt.Sprintf("download_cache/%s", file.Filename))
+			return context.Status(400).JSON(err.Error())
+		}
 	}
 	err = os.Remove(fmt.Sprintf("download_cache/%s", file.Filename))
 
