@@ -8,8 +8,10 @@ import (
 	"imazine/utils"
 	"io"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm/clause"
@@ -132,19 +134,37 @@ func UpdateArticle(context *fiber.Ctx) error {
 func GetArticle(context *fiber.Ctx) error{
 	articles := &[]models.Article{}
 	query := storage.DB.Db.Preload(clause.Associations).Order("created_at desc")
+	countQuery := storage.DB.Db.Table("articles")
 
 	if categoryId := context.Query("category"); categoryId != "" {
 		query = query.Where("category_id = ?", categoryId)
+		countQuery = countQuery.Where("category_id = ?", categoryId)
 	}
 
-	// TODO implement limit and offset
+	var count int64;
+	countQuery.Count(&count);
+
+	var pageSize = 5;
+	query = query.Limit(pageSize);
+
+	pageCount := int(math.Ceil(float64(count) / float64(pageSize)));
+
+	if page := context.Query("page"); page != "" {
+		pageNumber, _ := strconv.Atoi(page)
+		offset := (pageNumber - 1) * pageSize
+		query = query.Offset(offset)
+	}
+
 	// TODO only fetch needed data (articleListCard)
 	err := query.Find(articles).Error
 	if err != nil {
 		return context.Status(http.StatusBadRequest).JSON(err)
 	}
 
-	return context.Status(http.StatusOK).JSON(articles)
+	return context.Status(http.StatusOK).JSON(&fiber.Map{
+		"pageCount": pageCount,
+		"articles": articles,
+	})
 }
 
 func DeleteArticle(context *fiber.Ctx) error{
