@@ -18,6 +18,7 @@ type UserSmall struct {
 	Name               string `json:"name"`
 	NPM                string `json:"npm"`
 	ProfilePictureLink string `json:"profile_picture_link"`
+	IsAdmin            bool   `json:"is_admin"`
 }
 
 type UserLogin struct {
